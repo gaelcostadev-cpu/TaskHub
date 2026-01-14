@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\AuthService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Infrastructure\\AuthDbContext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\AuthService\\Infrastructure\\AuthDbContext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Domain\\User.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\AuthService\\Domain\\User.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Properties\\launchSettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\AuthService\\Properties\\launchSettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 184,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "src\\AuthService\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Properties\\launchSettings.json",
+              "RelativeToolTip": "src\\AuthService\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-13T00:53:32.589Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AuthDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Infrastructure\\AuthDbContext.cs",
+              "RelativeDocumentMoniker": "src\\AuthService\\Infrastructure\\AuthDbContext.cs",
+              "ToolTip": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Infrastructure\\AuthDbContext.cs",
+              "RelativeToolTip": "src\\AuthService\\Infrastructure\\AuthDbContext.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAUwC8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-11T18:32:28.857Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Domain\\User.cs",
+              "RelativeDocumentMoniker": "src\\AuthService\\Domain\\User.cs",
+              "ToolTip": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Domain\\User.cs",
+              "RelativeToolTip": "src\\AuthService\\Domain\\User.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAYAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-11T18:31:17.415Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Program.cs",
+              "RelativeDocumentMoniker": "src\\AuthService\\Program.cs",
+              "ToolTip": "C:\\Users\\gaelc\\OneDrive\\Documentos\\GitHub\\TaskHub\\src\\AuthService\\Program.cs",
+              "RelativeToolTip": "src\\AuthService\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-11T18:29:34.013Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
