@@ -10,6 +10,6 @@
     "\\src\\AuthService\\Migrations",
     "\\src\\AuthService\\Services"
   ],
-  "SelectedNode": "\\src\\AuthService\\Controllers\\AuthController.cs",
+  "SelectedNode": "\\src\\NotificationsService",
   "PreviewInSolutionExplorer": false
 }

@@ -59,8 +59,7 @@
               "RelativeToolTip": "src\\AuthService\\Services\\UserService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-14T00:38:19.804Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-14T00:38:19.804Z"
             },
             {
               "$type": "Document",
@@ -72,8 +71,7 @@
               "RelativeToolTip": "src\\AuthService\\Services\\IUserService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-14T00:37:58.497Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-14T00:37:58.497Z"
             },
             {
               "$type": "Document",
@@ -85,8 +83,7 @@
               "RelativeToolTip": "src\\AuthService\\Contracts\\RegisterResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-14T00:36:19.226Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-14T00:36:19.226Z"
             },
             {
               "$type": "Document",
@@ -98,8 +95,7 @@
               "RelativeToolTip": "src\\AuthService\\Contracts\\RegisterRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-14T00:36:02.195Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-14T00:36:02.195Z"
             },
             {
               "$type": "Document",
@@ -111,8 +107,7 @@
               "RelativeToolTip": "src\\AuthService\\Program.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-11T18:29:34.013Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-11T18:29:34.013Z"
             }
           ]
         }
