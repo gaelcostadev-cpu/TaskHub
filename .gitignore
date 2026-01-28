@@ -1,3 +1,4 @@
+# Ignora pastas bin e obj em qualquer subnível (ex: src/projeto/obj)
 .vs/
-[Bb]in/
-[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
