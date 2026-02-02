@@ -1,5 +1,6 @@
 ﻿using AuthService.Contracts;
 using AuthService.Services;
+using AuthService.Infrastructure.Jwt;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Controllers

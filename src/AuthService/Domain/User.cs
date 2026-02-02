@@ -13,7 +13,12 @@
 
         public DateTime CreatedAt { get; private set; }
 
-        protected User() { }
+        protected User() 
+        {
+            Username = null!;
+            Email = null!;
+            PasswordHash = null!;
+        }
 
         public User(string username, string email, string passwordHash)
         {

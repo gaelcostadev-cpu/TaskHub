@@ -12,11 +12,7 @@ namespace AuthService.Services
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-        public AuthApplicationService(AuthDbContext dbContext, IPasswordHasher passwordHasher)
-        {
-            _dbContext = dbContext;
-            _passwordHasher = passwordHasher;
-        }
+
 
         public AuthApplicationService(AuthDbContext dbContext,IPasswordHasher passwordHasher,
             IJwtTokenGenerator jwtTokenGenerator)
