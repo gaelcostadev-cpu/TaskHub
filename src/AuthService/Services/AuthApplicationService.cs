@@ -1,8 +1,9 @@
 ﻿using AuthService.Contracts;
-using AuthService.Domain;
 using AuthService.Infrastructure;
 using AuthService.Infrastructure.Jwt;
+using AuthService.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AuthService.Services
 {
@@ -11,41 +12,39 @@ namespace AuthService.Services
         private readonly AuthDbContext _dbContext;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
-
-
+        private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+        private readonly JwtSettings _jwtSettings;
 
         public AuthApplicationService(AuthDbContext dbContext,IPasswordHasher passwordHasher,
-            IJwtTokenGenerator jwtTokenGenerator)
+            IJwtTokenGenerator jwtTokenGenerator, IRefreshTokenGenerator refreshTokenGenerator,
+            IOptions<JwtSettings> jwtOptions)
         {
             _dbContext = dbContext;
             _passwordHasher = passwordHasher;
             _jwtTokenGenerator = jwtTokenGenerator;
+            _refreshTokenGenerator = refreshTokenGenerator;
+            _jwtSettings = jwtOptions.Value;
         }
-
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
             var normalizedEmail = request.Email.ToLower();
 
-            var user = await _dbContext.Users
-                .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail) 
+                ?? throw new UnauthorizedAccessException("Invalid credentials");
 
-            if (user is null)
-            {
-                throw new UnauthorizedAccessException("Invalid credentials");
-            }
+            var isPasswordValid = _passwordHasher.Verify(request.Password, user.PasswordHash);
 
-            var isPasswordValid = _passwordHasher.Verify(
-                   request.Password,
-                   user.PasswordHash
-               );
-
-            if (!isPasswordValid)
-            {
-                throw new UnauthorizedAccessException("Invalid credentials");
-            }
+            if (!isPasswordValid) throw new UnauthorizedAccessException("Invalid credentials");
+            
 
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
+            var refreshToken = _refreshTokenGenerator.Generate();
+            var refreshExpiresAt = DateTime.UtcNow.AddDays(7);
+
+            user.SetRefreshToken(refreshToken, refreshExpiresAt);
+
+            await _dbContext.SaveChangesAsync();
 
             return new LoginResponse
             {
@@ -53,9 +52,12 @@ namespace AuthService.Services
                 Email = user.Email,
                 Username = user.Username,
                 AccessToken = accessToken,
-                ExpiresIn = 60 * 15 // 15 min
+                RefreshToken = refreshToken,
+                ExpiresIn = _jwtSettings.AccessTokenExpirationMinutes * 60
             };
 
         }
+
+
     }
 }

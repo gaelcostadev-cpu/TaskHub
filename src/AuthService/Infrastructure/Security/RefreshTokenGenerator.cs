@@ -1,0 +1,13 @@
+﻿using System.Security.Cryptography;
+
+namespace AuthService.Infrastructure.Security
+{
+    public class RefreshTokenGenerator : IRefreshTokenGenerator
+    {
+        public string Generate()
+        {
+            var bytes = RandomNumberGenerator.GetBytes(64);
+            return Convert.ToBase64String(bytes);
+        }
+    }
+}
