@@ -18,12 +18,14 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string GenerateAccessToken(User user)
     {
+
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim("username", user.Username)
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.Name, user.Username)
         };
+
 
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_jwtSettings.Key));

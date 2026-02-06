@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AuthService.Controllers
 {
     [ApiController]
     [Route("auth")]
-    public class TestController : ControllerBase
+    public class TestController : BaseAuthController
     {
         [Authorize]
         [HttpGet("me")]
@@ -14,9 +13,9 @@ namespace AuthService.Controllers
         {
             return Ok(new
             {
-                UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value,
-                Email = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value,
-                Username = User.FindFirst("username")?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value
+                UserId,
+                Email,
+                Username
             });
         }
     }

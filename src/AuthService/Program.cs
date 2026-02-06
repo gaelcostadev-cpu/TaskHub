@@ -41,6 +41,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ClockSkew = TimeSpan.Zero
     };
 });
+builder.Services.AddAuthorizationBuilder().
+    AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserService, UserService>();
