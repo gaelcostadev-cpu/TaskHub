@@ -8,6 +8,13 @@ using Microsoft.Extensions.Options;
 
 namespace AuthService.Controllers
 {
+    /// <summary>
+    /// Endpoints de autenticação e autorização
+    /// </summary>
+    /// <remarks>
+    /// Para endpoints protegidos, enviar o header:
+    /// Authorization: Bearer {token}
+    /// </remarks>
     [ApiController]
     [Route("auth")]
     public class AuthController : ControllerBase
@@ -28,6 +35,12 @@ namespace AuthService.Controllers
             _jwtSettings = jwtOptions.Value;
         }
 
+
+        /// <summary>
+        /// Registra um usuário
+        /// </summary>
+        /// <response code="200">Registro realizado com sucesso</response>
+        /// <response code="401">Credenciais inválidas</response>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -42,6 +55,12 @@ namespace AuthService.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Autentica um usuário e retorna tokens JWT
+        /// </summary>
+        /// <response code="200">Login realizado com sucesso</response>
+        /// <response code="401">Credenciais inválidas</response>
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
@@ -56,6 +75,12 @@ namespace AuthService.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Retorna tokens JWT
+        /// </summary>
+        /// <response code="200">Refresh realizado com sucesso</response>
+        /// <response code="401">Credenciais inválidas</response>
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
         {

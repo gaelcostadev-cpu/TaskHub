@@ -35,7 +35,7 @@ Os serviços são independentes, cada um responsável pelo seu contexto, e um AP
 - Banco de Dados: PostgreSQL com Entity Framework Core
 - Mensageria: RabbitMQ
 - Tempo Real: SignalR
-- Versionamento e Documentação: Swagger / OpenAPI
+- Versionamento e Documentação: OpenAPI native (.NET 10) sem Swashbuckle, utilizando Microsoft.AspNetCore.OpenApi, com Scalar (openapi.html).
 - Infraestrutura: Docker e Docker Compose
 - Observabilidade / Logging: Serilog (ou equivalente)
 

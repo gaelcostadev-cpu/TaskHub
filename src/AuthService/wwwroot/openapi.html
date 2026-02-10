@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <title>AuthService API</title>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        scalar-api-reference {
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script id="api-reference" data-url="/openapi/v1.json" spec-url="/openapi/v1.json"
+                          authentication='{
+      "preferredSecurityScheme": "bearerAuth",
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    }'></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+</body>
+</html>

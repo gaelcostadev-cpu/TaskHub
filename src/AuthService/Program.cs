@@ -2,9 +2,10 @@ using AuthService.Infrastructure;
 using AuthService.Infrastructure.Jwt;
 using AuthService.Infrastructure.Security;
 using AuthService.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
@@ -19,7 +20,40 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        // Registra o security scheme Bearer no documento
+        var securitySchemes = new Dictionary<string, IOpenApiSecurityScheme>
+        {
+            ["Bearer"] = new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                In = ParameterLocation.Header,
+                BearerFormat = "JWT",
+                Description = "Insira o token JWT no campo abaixo (sem o prefixo 'Bearer')"
+            }
+        };
+
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes = securitySchemes;
+
+        // Aplica o requisito de segurança em todas as operações
+        foreach (var operation in document.Paths.Values.SelectMany(path => path.Operations))
+        {
+            operation.Value.Security ??= [];
+            operation.Value.Security.Add(new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+            });
+        }
+
+        return Task.CompletedTask;
+    });
+});
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -55,9 +89,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
 }
 
-// app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -15,6 +15,11 @@ namespace AuthService.Controllers
             _passwordHasher = passwordHasher;
         }
 
+        /// <summary>
+        /// Debug endpoint para hashear e verificar senhas.
+        /// </summary>
+        /// <response code="200">Hash realizado com sucesso</response>
+        /// <response code="401">Credenciais inválidas</response>
         [HttpPost("hash")]
         public IActionResult Hash([FromBody] HashRequest request)
         {
