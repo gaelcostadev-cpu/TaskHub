@@ -7,6 +7,16 @@ namespace TasksService.Domain.Entities
     {
         public Guid Id { get; private set; }
 
+        public ICollection<TaskAssignment> Assignments { get; private set; } = new List<TaskAssignment>();
+
+        public void AssignUser(Guid userId)
+        {
+            if (Assignments.Any(a => a.AssignedUserId == userId))
+                return;
+
+            Assignments.Add(new TaskAssignment(Id, userId));
+        }
+
         public string Title { get; private set; } = null!;
 
         public string? Description { get; private set; }
@@ -35,7 +45,7 @@ namespace TasksService.Domain.Entities
             Id = Guid.NewGuid();
             Title = title;
             Description = description;
-            DueDate = dueDate;
+            DueDate = dueDate.HasValue ? DateTime.SpecifyKind(dueDate.Value, DateTimeKind.Utc) : null;
             Priority = priority;
             Status = Enums.TaskStatus.TODO;
             CreatedByUserId = createdByUserId;
@@ -51,7 +61,7 @@ namespace TasksService.Domain.Entities
         {
             Title = title;
             Description = description;
-            DueDate = dueDate;
+            DueDate = dueDate.HasValue ? DateTime.SpecifyKind(dueDate.Value, DateTimeKind.Utc) : null;
             Priority = priority;
             Status = status;
             UpdatedAt = DateTime.UtcNow;

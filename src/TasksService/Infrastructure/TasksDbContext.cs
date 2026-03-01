@@ -10,11 +10,18 @@ public class TasksDbContext : DbContext
     {
     }
 
-    public DbSet<TaskItem> Tasks => Set<TaskItem>();
+    public DbSet<TaskAssignment> TaskAssignments { get; set; }
+
+    public DbSet<TaskItem> Tasks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<TaskAssignment>()
+        .HasOne(a => a.Task)
+        .WithMany(t => t.Assignments)
+        .HasForeignKey(a => a.TaskId);
 
         var taskBuilder = modelBuilder.Entity<TaskItem>();
 
@@ -46,5 +53,9 @@ public class TasksDbContext : DbContext
             .IsRequired();
 
         taskBuilder.HasIndex(t => t.CreatedByUserId);
+        taskBuilder.HasIndex(t => t.Status);
+        taskBuilder.HasIndex(t => t.Priority);
+        taskBuilder.HasIndex(t => t.DueDate);
+        taskBuilder.HasIndex(t => t.CreatedAt);
     }
 }

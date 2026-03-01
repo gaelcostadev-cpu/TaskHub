@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TasksService.Contracts;
+using TasksService.Domain.Enums;
 using TasksService.Services;
+using TaskStatus = TasksService.Domain.Enums.TaskStatus;
 
 namespace TasksService.Controllers
 {
@@ -20,19 +22,13 @@ namespace TasksService.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPaged(
-            [FromQuery] int page = 1,
-            [FromQuery] int size = 10)
+        public async Task<IActionResult> GetPaged([FromQuery] TaskQueryParameters query)
         {
             var userId = GetUserId();
 
-            var result = await _taskService.GetPagedAsync(page, size, userId);
+            var result = await _taskService.GetPagedAsync(query, userId);
 
-            return Ok(new
-            {
-                result.TotalCount,
-                result.Items
-            });
+            return Ok(result);
         }
 
         [HttpGet("{id:guid}")]
@@ -79,6 +75,19 @@ namespace TasksService.Controllers
             var deleted = await _taskService.DeleteAsync(id, userId);
 
             if (!deleted)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        [HttpPost("{id:guid}/assign/{assignedUserId:guid}")]
+        public async Task<IActionResult> Assign(Guid id, Guid assignedUserId)
+        {
+            var userId = GetUserId();
+
+            var result = await _taskService.AssignUserAsync(id, assignedUserId, userId);
+
+            if (!result)
                 return NotFound();
 
             return NoContent();

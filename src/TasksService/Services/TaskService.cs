@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TasksService.Contracts;
 using TasksService.Domain.Entities;
+using TasksService.Domain.Enums;
 using TasksService.Infrastructure;
 
 namespace TasksService.Services;
@@ -33,36 +34,120 @@ public class TaskService : ITaskService
     public async Task<TaskResponse?> GetByIdAsync(Guid id, Guid userId)
     {
         var task = await _context.Tasks
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Id == id && t.CreatedByUserId == userId);
+        .AsNoTracking()
+        .FirstOrDefaultAsync(
+            t => t.Id == id && 
+            (t.CreatedByUserId == userId ||
+            t.Assignments.Any(a => a.AssignedUserId == userId))
+        );
 
         return task is null ? null : MapToResponse(task);
     }
 
-    public async Task<(IEnumerable<TaskResponse> Items, int TotalCount)> GetPagedAsync(int page, int size, Guid userId)
+    public async Task<PagedResponse<TaskResponse>> GetPagedAsync(
+        TaskQueryParameters parameters,
+        Guid userId)
     {
         var query = _context.Tasks
-            .Where(t => t.CreatedByUserId == userId)
-            .OrderByDescending(t => t.CreatedAt);
+            .Include(t => t.Assignments)
+            .AsQueryable();
+
+        // Segurança
+        if (parameters.AssignedToMe && parameters.CreatedByMe)
+        {
+            query = query.Where(t =>
+                t.CreatedByUserId == userId ||
+                t.Assignments.Any(a => a.AssignedUserId == userId));
+        }
+        else if (parameters.AssignedToMe)
+        {
+            query = query.Where(t =>
+                t.Assignments.Any(a => a.AssignedUserId == userId));
+        }
+        else if (parameters.CreatedByMe)
+        {
+            query = query.Where(t =>
+                t.CreatedByUserId == userId);
+        }
+
+        // Filtros
+        if (parameters.Status.HasValue)
+            query = query.Where(t => t.Status == parameters.Status);
+
+        if (parameters.Priority.HasValue)
+            query = query.Where(t => t.Priority == parameters.Priority);
+
+        if (parameters.DueDateFrom.HasValue)
+        {
+            /// Garantir que as datas sejam comparadas em UTC
+            var fromUtc = DateTime.SpecifyKind(
+                parameters.DueDateFrom.Value,
+                DateTimeKind.Utc);
+
+            query = query.Where(t => t.DueDate >= fromUtc);
+        }
+
+        if (parameters.DueDateTo.HasValue)
+        {
+            /// Garantir que as datas sejam comparadas em UTC
+            var toUtc = DateTime.SpecifyKind(
+                parameters.DueDateTo.Value,
+                DateTimeKind.Utc);
+
+            query = query.Where(t => t.DueDate <= toUtc);
+        }
+
+
+        if (!string.IsNullOrWhiteSpace(parameters.Search))
+        {
+            var search = parameters.Search.ToLower();
+            query = query.Where(t =>
+                EF.Functions.ILike(t.Title, $"%{parameters.Search}%"));
+        }
+
+        // Ordenação
+        query = parameters.SortBy?.ToLower() switch
+        {
+            "duedate" => parameters.Desc
+                ? query.OrderByDescending(t => t.DueDate)
+                : query.OrderBy(t => t.DueDate),
+
+            "priority" => parameters.Desc
+                ? query.OrderByDescending(t => t.Priority)
+                : query.OrderBy(t => t.Priority),
+
+            _ => parameters.Desc
+                ? query.OrderByDescending(t => t.CreatedAt)
+                : query.OrderBy(t => t.CreatedAt)
+        };
 
         var totalCount = await query.CountAsync();
 
-        page = (page <= 0) ? 1 : page;
-        size = (size > 0 && size <= 100) ? size : 50;
+        var page = parameters.Page <= 0 ? 1 : parameters.Page;
+        var size = parameters.Size is > 0 and <= 100 ? parameters.Size : 10;
 
-        var tasks = await query
+        var items = await query
             .Skip((page - 1) * size)
             .Take(size)
             .AsNoTracking()
             .ToListAsync();
 
-        return (tasks.Select(MapToResponse), totalCount);
+        return new PagedResponse<TaskResponse>
+        {
+            Page = page,
+            Size = size,
+            TotalCount = totalCount,
+            Items = items.Select(MapToResponse)
+        };
     }
 
     public async Task<bool> UpdateAsync(Guid id, UpdateTaskRequest request, Guid userId)
     {
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(t => t.Id == id && t.CreatedByUserId == userId);
+        .FirstOrDefaultAsync(
+            t => t.Id == id &&
+            t.CreatedByUserId == userId
+        );
 
         if (task is null)
             return false;
@@ -79,13 +164,35 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, Guid userId)
+    public async Task<bool> AssignUserAsync(Guid taskId, Guid assignedUserId, Guid requesterId)
     {
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(t => t.Id == id && t.CreatedByUserId == userId);
+            .Include(t => t.Assignments)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
 
         if (task is null)
             return false;
+
+        // Apenas criador pode atribuir
+        if (task.CreatedByUserId != requesterId)
+            return false;
+
+        task.AssignUser(assignedUserId);
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id, Guid userId)
+    {
+        var task = await _context.Tasks
+            .FirstOrDefaultAsync
+            (
+                t => t.Id == id && t.CreatedByUserId == userId
+            );
+
+        if (task is null) return false;
 
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
