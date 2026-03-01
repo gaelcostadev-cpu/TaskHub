@@ -1,9 +1,12 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using ApiGateway.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +19,11 @@ var builder = WebApplication.CreateBuilder(args);
  *	6 Health Checks      = Endpoint/health para monitoramento 
 */
 
-
+#region Builder configuration
+//proxy
 builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-
+//jwt
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -45,19 +49,68 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AuthenticatedUser", policy =>
+builder.Services.AddAuthorizationBuilder().
+    AddPolicy("AuthenticatedUser", policy =>
     {
         policy.RequireAuthenticatedUser();
     });
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("AuthenticatedPolicy", httpContext =>
+    {
+        var userId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+          ?? httpContext.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: userId ?? httpContext.Connection.RemoteIpAddress?.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromSeconds(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            });
+    });
+
+    options.AddPolicy("AuthEndpointsPolicy", httpContext =>
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1)
+            });
+    });
+
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+
+        var logger = context.HttpContext.RequestServices
+        .GetRequiredService<ILogger<Program>>();
+
+        logger.LogWarning("Rate limit exceeded for {IP}",
+            context.HttpContext.Connection.RemoteIpAddress);
+
+        await context.HttpContext.Response.WriteAsync(
+            JsonSerializer.Serialize(new
+            {
+                message = "Rate limit exceeded. Try again later."
+            }),
+            cancellationToken: token);
+    };
 });
 
-
-
+//controllers
 builder.Services.AddControllers();
 
-
+//openapi
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
 {
@@ -104,7 +157,7 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-
+//cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DefaultCors", policy =>
@@ -116,10 +169,11 @@ builder.Services.AddCors(options =>
     });
 });
 
-
+//health checks
 builder.Services.AddHealthChecks();
 var app = builder.Build();
 
+#endregion 
 
 if (app.Environment.IsDevelopment())
 {
@@ -127,8 +181,27 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("DefaultCors");
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices
+        .GetRequiredService<ILoggerFactory>()
+        .CreateLogger("GatewayLogger");
+
+    if (logger.IsEnabled(LogLevel.Information))
+    {
+        logger.LogInformation(
+            "Incoming {Method} {Path} from {IP}",
+            context.Request.Method,
+            context.Request.Path,
+            context.Connection.RemoteIpAddress
+        );
+    }
+
+    await next();
+});
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapGet("/", () => Results.Ok(new
@@ -143,19 +216,22 @@ app.MapReverseProxy(proxyPipeline =>
     {
         var path = context.Request.Path;
 
-        // Permite auth sem token
         if (path.StartsWithSegments("/auth"))
         {
             await next();
             return;
         }
 
-        // Exige autenticação para qualquer outra rota
-        if (!context.User.Identity?.IsAuthenticated ?? true)
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            return;
-        }
+        // Extrai claims
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+             ?? context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        var email = context.User.FindFirst("email")?.Value;
+
+        if (!string.IsNullOrEmpty(userId))
+            context.Request.Headers["X-User-Id"] = userId;
+
+        if (!string.IsNullOrEmpty(email))
+            context.Request.Headers["X-User-Email"] = email;
 
         await next();
     });
