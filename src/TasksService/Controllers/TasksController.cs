@@ -4,7 +4,6 @@ using System.Security.Claims;
 using TasksService.Contracts;
 using TasksService.Domain.Enums;
 using TasksService.Services;
-using TaskStatus = TasksService.Domain.Enums.TaskStatus;
 
 namespace TasksService.Controllers
 {
@@ -87,10 +86,14 @@ namespace TasksService.Controllers
 
             var result = await _taskService.AssignUserAsync(id, assignedUserId, userId);
 
-            if (!result)
-                return NotFound();
-
-            return NoContent();
+            return result switch
+            {
+                AssignUserResult.Success => NoContent(),
+                AssignUserResult.TaskNotFound => NotFound(),
+                AssignUserResult.NotAllowed => Forbid(),
+                AssignUserResult.AlreadyAssigned => Conflict("User already assigned."),
+                _ => StatusCode(500)
+            };
         }
 
         private Guid GetUserId()

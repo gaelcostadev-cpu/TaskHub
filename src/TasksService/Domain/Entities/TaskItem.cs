@@ -9,12 +9,15 @@ namespace TasksService.Domain.Entities
 
         public ICollection<TaskAssignment> Assignments { get; private set; } = new List<TaskAssignment>();
 
-        public void AssignUser(Guid userId)
+        public bool AssignUser(Guid userId)
         {
             if (Assignments.Any(a => a.AssignedUserId == userId))
-                return;
+                return false;
 
             Assignments.Add(new TaskAssignment(Id, userId));
+            UpdatedAt = DateTime.UtcNow;
+
+            return true;
         }
 
         public string Title { get; private set; } = null!;

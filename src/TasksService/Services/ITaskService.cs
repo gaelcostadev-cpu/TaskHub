@@ -16,7 +16,7 @@ namespace TasksService.Services
         /// <param name="assignedUserId"></param>
         /// <param name="requesterId"></param>
         /// <returns></returns>
-        Task<bool> AssignUserAsync(Guid taskId, Guid assignedUserId, Guid requesterId);
+        Task<AssignUserResult> AssignUserAsync(Guid taskId, Guid assignedUserId, Guid requesterId);
 
         /// <summary>
         /// Retorna uma tarefa pelo Id (somente se pertencer ao usuário)

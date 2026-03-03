@@ -19,9 +19,16 @@ public class TasksDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<TaskAssignment>()
-        .HasOne(a => a.Task)
-        .WithMany(t => t.Assignments)
-        .HasForeignKey(a => a.TaskId);
+                    .HasOne(a => a.Task)
+                    .WithMany(t => t.Assignments)
+                    .HasForeignKey(a => a.TaskId);
+
+        modelBuilder.Entity<TaskAssignment>()
+                    .HasIndex(a => new { a.TaskId, a.AssignedUserId })
+                    .IsUnique();
+
+        modelBuilder.Entity<TaskAssignment>()
+                    .HasIndex(a => a.AssignedUserId);
 
         var taskBuilder = modelBuilder.Entity<TaskItem>();
 

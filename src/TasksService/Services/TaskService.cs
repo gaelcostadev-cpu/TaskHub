@@ -164,24 +164,29 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async Task<bool> AssignUserAsync(Guid taskId, Guid assignedUserId, Guid requesterId)
+    public async Task<AssignUserResult> AssignUserAsync(
+        Guid taskId,
+        Guid assignedUserId,
+        Guid requesterId)
     {
         var task = await _context.Tasks
             .Include(t => t.Assignments)
             .FirstOrDefaultAsync(t => t.Id == taskId);
 
         if (task is null)
-            return false;
+            return AssignUserResult.TaskNotFound;
 
-        // Apenas criador pode atribuir
         if (task.CreatedByUserId != requesterId)
-            return false;
+            return AssignUserResult.NotAllowed;
 
-        task.AssignUser(assignedUserId);
+        var assigned = task.AssignUser(assignedUserId);
+
+        if (!assigned)
+            return AssignUserResult.AlreadyAssigned;
 
         await _context.SaveChangesAsync();
 
-        return true;
+        return AssignUserResult.Success;
     }
 
     public async Task<bool> DeleteAsync(Guid id, Guid userId)
