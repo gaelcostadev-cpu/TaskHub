@@ -13,11 +13,46 @@ public class TasksDbContext : DbContext
     public DbSet<TaskAssignment> TaskAssignments { get; set; }
     public DbSet<TaskItem> Tasks { get; set; }
     public DbSet<TaskComment> TaskComments { get; set; }
+    public DbSet<TaskHistory> TaskHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        #region TaskHistory Builder
+        var historyBuilder = modelBuilder.Entity<TaskHistory>();
+
+        historyBuilder.ToTable("task_histories");
+
+        historyBuilder.HasKey(h => h.Id);
+
+        historyBuilder.Property(h => h.PropertyName)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        historyBuilder.Property(h => h.OldValue)
+            .HasMaxLength(500);
+
+        historyBuilder.Property(h => h.NewValue)
+            .HasMaxLength(500);
+
+        historyBuilder.Property(h => h.ChangedAt)
+            .IsRequired();
+
+        historyBuilder.Property(h => h.ChangedByUserId)
+            .IsRequired();
+
+        historyBuilder.HasIndex(h => h.TaskId);
+        historyBuilder.HasIndex(h => h.ChangedByUserId);
+        historyBuilder.HasIndex(h => h.ChangedAt);
+
+        historyBuilder.HasOne(h => h.Task)
+            .WithMany()
+            .HasForeignKey(h => h.TaskId)
+            .OnDelete(DeleteBehavior.Cascade);
+        #endregion
+
+        #region TaskComment Builder
         var commentBuilder = modelBuilder.Entity<TaskComment>();
 
         commentBuilder.ToTable("task_comments");
@@ -51,6 +86,9 @@ public class TasksDbContext : DbContext
         modelBuilder.Entity<TaskAssignment>()
                     .HasIndex(a => a.AssignedUserId);
 
+        #endregion
+
+        #region Task Builder
         var taskBuilder = modelBuilder.Entity<TaskItem>();
 
         taskBuilder.ToTable("tasks");
@@ -79,6 +117,7 @@ public class TasksDbContext : DbContext
 
         taskBuilder.Property(t => t.CreatedByUserId)
             .IsRequired();
+        #endregion
 
         taskBuilder.HasIndex(t => t.CreatedByUserId);
         taskBuilder.HasIndex(t => t.Status);

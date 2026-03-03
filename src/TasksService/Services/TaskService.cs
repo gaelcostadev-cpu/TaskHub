@@ -150,6 +150,42 @@ public class TaskService : ITaskService
         if (task is null)
             return false;
 
+        var oldTitle = task.Title;
+        var oldDescription = task.Description;
+        var oldDueDate = task.DueDate;
+        var oldPriority = task.Priority;
+        var oldStatus = task.Status;
+
+        if (oldTitle != request.Title)
+            AddHistory(task.Id, "Title", oldTitle, request.Title, userId);
+
+        if (oldDescription != request.Description)
+            AddHistory(task.Id, "Description", oldDescription, request.Description, userId);
+
+        if (oldDueDate != request.DueDate)
+        {
+            AddHistory(task.Id, "DueDate",
+                oldDueDate.HasValue ? oldDueDate.Value.ToString("O") : null,
+                request.DueDate.ToString("O"),
+                userId);
+        }
+
+        if (oldPriority != request.Priority)
+        {
+            AddHistory(task.Id, "Priority",
+                oldPriority.ToString(),
+                request.Priority.ToString(),
+                userId);
+        }
+
+        if (oldStatus != request.Status)
+        {
+            AddHistory(task.Id, "Status",
+                oldStatus.ToString(),
+                request.Status.ToString(),
+                userId);
+        }
+
         task.Update(
             request.Title,
             request.Description,
@@ -178,6 +214,8 @@ public class TaskService : ITaskService
 
         if (!assigned)
             return AssignUserResult.AlreadyAssigned;
+
+        AddHistory(task.Id, "Assignment", null, assignedUserId.ToString(), requesterId);
 
         await _context.SaveChangesAsync();
 
@@ -295,6 +333,47 @@ public class TaskService : ITaskService
         };
     }
 
+    private void AddHistory(Guid taskId, string propertyName, string? oldValue, string? newValue, Guid userId)
+    {
+        var history = new TaskHistory(
+            taskId,
+            propertyName,
+            oldValue,
+            newValue,
+            userId
+        );
 
+        _context.TaskHistories.Add(history);
+    }
+
+    public async Task<IEnumerable<TaskHistoryResponse>> GetHistoryAsync(Guid taskId, Guid userId)
+    {
+        var taskExists = await _context.Tasks
+            .AnyAsync(t =>
+                t.Id == taskId &&
+                (
+                    t.CreatedByUserId == userId ||
+                    t.Assignments.Any(a => a.AssignedUserId == userId)
+                )
+            );
+
+        if (!taskExists)
+            return Enumerable.Empty<TaskHistoryResponse>();
+
+        var history = await _context.TaskHistories
+            .Where(h => h.TaskId == taskId)
+            .OrderByDescending(h => h.ChangedAt)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return history.Select(h => new TaskHistoryResponse
+        {
+            PropertyName = h.PropertyName,
+            OldValue = h.OldValue,
+            NewValue = h.NewValue,
+            ChangedByUserId = h.ChangedByUserId,
+            ChangedAt = h.ChangedAt
+        });
+    }
 
 }

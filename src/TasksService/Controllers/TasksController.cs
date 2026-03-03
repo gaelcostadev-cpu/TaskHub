@@ -128,5 +128,15 @@ namespace TasksService.Controllers
 
             return Guid.Parse(claim);
         }
+
+        [HttpGet("{id:guid}/history")]
+        public async Task<IActionResult> GetHistory(Guid id)
+        {
+            var userId = GetUserId();
+
+            var result = await _taskService.GetHistoryAsync(id, userId);
+
+            return Ok(result);
+        }
     }
 }

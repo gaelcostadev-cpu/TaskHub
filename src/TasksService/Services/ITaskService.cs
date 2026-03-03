@@ -45,11 +45,22 @@ namespace TasksService.Services
         /// <returns></returns>
         Task<CommentResponse?> AddCommentAsync(Guid taskId, Guid userId, string content);
 
-        /// <summary>
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="page"></param>
+        /// <param name="size"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         Task<PagedResponse<CommentResponse>> GetCommentsAsync(
             Guid taskId,
             int page,
             int size,
             Guid userId);
+
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<IEnumerable<TaskHistoryResponse>> GetHistoryAsync(Guid taskId, Guid userId);
     }
 }
