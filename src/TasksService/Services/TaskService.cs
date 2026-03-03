@@ -44,9 +44,7 @@ public class TaskService : ITaskService
         return task is null ? null : MapToResponse(task);
     }
 
-    public async Task<PagedResponse<TaskResponse>> GetPagedAsync(
-        TaskQueryParameters parameters,
-        Guid userId)
+    public async Task<PagedResponse<TaskResponse>> GetPagedAsync(TaskQueryParameters parameters, Guid userId)
     {
         var query = _context.Tasks
             .Include(t => t.Assignments)
@@ -164,10 +162,7 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async Task<AssignUserResult> AssignUserAsync(
-        Guid taskId,
-        Guid assignedUserId,
-        Guid requesterId)
+    public async Task<AssignUserResult> AssignUserAsync(Guid taskId, Guid assignedUserId, Guid requesterId)
     {
         var task = await _context.Tasks
             .Include(t => t.Assignments)
@@ -219,4 +214,87 @@ public class TaskService : ITaskService
             UpdatedAt = task.UpdatedAt
         };
     }
+
+    public async Task<PagedResponse<CommentResponse>> GetCommentsAsync(Guid taskId, int page, int size, Guid userId)
+    {
+        var taskExists = await _context.Tasks
+            .AnyAsync(t =>
+                t.Id == taskId &&
+                (
+                    t.CreatedByUserId == userId ||
+                    t.Assignments.Any(a => a.AssignedUserId == userId)
+                )
+            );
+
+        if (!taskExists)
+            return new PagedResponse<CommentResponse>
+            {
+                Page = page,
+                Size = size,
+                TotalCount = 0,
+                Items = Enumerable.Empty<CommentResponse>()
+            };
+
+        page = page <= 0 ? 1 : page;
+        size = size is > 0 and <= 100 ? size : 10;
+
+        var query = _context.TaskComments
+            .Where(c => c.TaskId == taskId)
+            .OrderBy(c => c.CreatedAt);
+
+        var total = await query.CountAsync();
+
+        var comments = await query
+            .Skip((page - 1) * size)
+            .Take(size)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return new PagedResponse<CommentResponse>
+        {
+            Page = page,
+            Size = size,
+            TotalCount = total,
+            Items = comments.Select(c => new CommentResponse
+            {
+                Id = c.Id,
+                AuthorUserId = c.AuthorUserId,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt
+            })
+        };
+    }
+
+    public async Task<CommentResponse?> AddCommentAsync(Guid taskId, Guid userId, string content)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Assignments)
+            .FirstOrDefaultAsync(t =>
+                t.Id == taskId &&
+                (
+                    t.CreatedByUserId == userId ||
+                    t.Assignments.Any(a => a.AssignedUserId == userId)
+                )
+            );
+
+        if (task is null)
+            return null;
+
+        var comment = new TaskComment(taskId, userId, content);
+
+        _context.TaskComments.Add(comment);
+
+        await _context.SaveChangesAsync();
+
+        return new CommentResponse
+        {
+            Id = comment.Id,
+            AuthorUserId = comment.AuthorUserId,
+            Content = comment.Content,
+            CreatedAt = comment.CreatedAt
+        };
+    }
+
+
+
 }

@@ -37,5 +37,19 @@ namespace TasksService.Services
         /// Remove uma tarefa do usuário
         /// </summary>
         Task<bool> DeleteAsync(Guid id, Guid userId);
+
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="userId"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        Task<CommentResponse?> AddCommentAsync(Guid taskId, Guid userId, string content);
+
+        /// <summary>
+        Task<PagedResponse<CommentResponse>> GetCommentsAsync(
+            Guid taskId,
+            int page,
+            int size,
+            Guid userId);
     }
 }

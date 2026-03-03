@@ -75,5 +75,7 @@ namespace TasksService.Domain.Entities
             Status = status;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public ICollection<TaskComment> Comments { get; private set; } = new List<TaskComment>();
     }
 }

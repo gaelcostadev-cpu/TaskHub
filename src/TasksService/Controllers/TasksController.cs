@@ -95,6 +95,29 @@ namespace TasksService.Controllers
                 _ => StatusCode(500)
             };
         }
+        
+        [HttpPost("{id:guid}/comments")]
+        public async Task<IActionResult> AddComment(Guid id, [FromBody] CreateCommentRequest request)
+        {
+            var userId = GetUserId();
+
+            var result = await _taskService.AddCommentAsync(id, userId, request.Content);
+
+            if (result is null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
+        [HttpGet("{id:guid}/comments")]
+        public async Task<IActionResult> GetComments( Guid id, [FromQuery] int page = 1, [FromQuery] int size = 10)
+        {
+            var userId = GetUserId();
+
+            var result = await _taskService.GetCommentsAsync(id, page, size, userId);
+
+            return Ok(result);
+        }
 
         private Guid GetUserId()
         {

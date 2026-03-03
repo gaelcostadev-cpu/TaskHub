@@ -11,12 +11,33 @@ public class TasksDbContext : DbContext
     }
 
     public DbSet<TaskAssignment> TaskAssignments { get; set; }
-
     public DbSet<TaskItem> Tasks { get; set; }
+    public DbSet<TaskComment> TaskComments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        var commentBuilder = modelBuilder.Entity<TaskComment>();
+
+        commentBuilder.ToTable("task_comments");
+
+        commentBuilder.HasKey(c => c.Id);
+
+        commentBuilder.Property(c => c.Content)
+            .IsRequired()
+            .HasMaxLength(1000);
+
+        commentBuilder.Property(c => c.CreatedAt)
+            .IsRequired();
+
+        commentBuilder.HasIndex(c => c.TaskId);
+        commentBuilder.HasIndex(c => c.AuthorUserId);
+
+        commentBuilder.HasOne(c => c.Task)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(c => c.TaskId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<TaskAssignment>()
                     .HasOne(a => a.Task)
