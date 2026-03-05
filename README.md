@@ -43,6 +43,7 @@ Os serviços são independentes, cada um responsável pelo seu contexto, e um AP
 
 ## Detalhes
 - Foi utilizado a propriedade 'sealed' em algumas classes, para otimizar a chamada dos métodos pelo frontend, além, é claro, de previnir herança indesejada.
+- Fluxo: Controller → Validation(FluentValidation) → Service → Domain → Repository/DbContext
 
 ## Instalação
 Clonar o repositório e acessar a pasta principal do projeto.
