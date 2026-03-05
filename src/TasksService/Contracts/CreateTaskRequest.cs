@@ -13,7 +13,7 @@ public sealed class CreateTaskRequest
     public string? Description { get; init; }
 
     [Required]
-    public DateTime DueDate { get; init; }
+    public DateTime? DueDate { get; init; }
 
     [Required]
     public TaskPriority Priority { get; init; }

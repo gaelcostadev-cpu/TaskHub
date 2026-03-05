@@ -1,4 +1,7 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -6,6 +9,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using TasksService.Infrastructure;
 using TasksService.Services;
+using TasksService.Validators;
+using TasksService.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +94,28 @@ builder.Services.AddAuthorizationBuilder().
     AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 
 builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCommentRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<TaskQueryParametersValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskRequestValidator>();
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(x => x.Value.Errors.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.Errors.Select(e => e.ErrorMessage));
+
+        return new BadRequestObjectResult(new
+        {
+            message = "Validation failed",
+            errors
+        });
+    };
+});
 
 var app = builder.Build();
 

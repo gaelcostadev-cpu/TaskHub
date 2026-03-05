@@ -3,6 +3,7 @@ using TasksService.Contracts;
 using TasksService.Domain.Entities;
 using TasksService.Domain.Enums;
 using TasksService.Infrastructure;
+using TasksService.Mappings;
 
 namespace TasksService.Services;
 
@@ -28,7 +29,7 @@ public class TaskService : ITaskService
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
-        return MapToResponse(task);
+        return task.ToResponse();
     }
 
     public async Task<TaskResponse?> GetByIdAsync(Guid id, Guid userId)
@@ -41,7 +42,7 @@ public class TaskService : ITaskService
             t.Assignments.Any(a => a.AssignedUserId == userId))
         );
 
-        return task is null ? null : MapToResponse(task);
+        return task is null ? null : task.ToResponse();
     }
 
     public async Task<PagedResponse<TaskResponse>> GetPagedAsync(TaskQueryParameters parameters, Guid userId)
@@ -121,8 +122,8 @@ public class TaskService : ITaskService
 
         var totalCount = await query.CountAsync();
 
-        var page = parameters.Page <= 0 ? 1 : parameters.Page;
-        var size = parameters.Size is > 0 and <= 100 ? parameters.Size : 10;
+        var page = parameters.Page;
+        var size = parameters.Size;
 
         var items = await query
             .Skip((page - 1) * size)
@@ -135,7 +136,7 @@ public class TaskService : ITaskService
             Page = page,
             Size = size,
             TotalCount = totalCount,
-            Items = items.Select(MapToResponse)
+            Items = items.Select(TaskMappings.ToResponse)
         };
     }
 
@@ -238,21 +239,6 @@ public class TaskService : ITaskService
         return true;
     }
 
-    private static TaskResponse MapToResponse(TaskItem task)
-    {
-        return new TaskResponse
-        {
-            Id = task.Id,
-            Title = task.Title,
-            Description = task.Description,
-            DueDate = task.DueDate,
-            Priority = task.Priority,
-            Status = task.Status,
-            CreatedAt = task.CreatedAt,
-            UpdatedAt = task.UpdatedAt
-        };
-    }
-
     public async Task<PagedResponse<CommentResponse>> GetCommentsAsync(Guid taskId, int page, int size, Guid userId)
     {
         var taskExists = await _context.Tasks
@@ -273,9 +259,6 @@ public class TaskService : ITaskService
                 Items = Enumerable.Empty<CommentResponse>()
             };
 
-        page = page <= 0 ? 1 : page;
-        size = size is > 0 and <= 100 ? size : 10;
-
         var query = _context.TaskComments
             .Where(c => c.TaskId == taskId)
             .OrderBy(c => c.CreatedAt);
@@ -293,13 +276,7 @@ public class TaskService : ITaskService
             Page = page,
             Size = size,
             TotalCount = total,
-            Items = comments.Select(c => new CommentResponse
-            {
-                Id = c.Id,
-                AuthorUserId = c.AuthorUserId,
-                Content = c.Content,
-                CreatedAt = c.CreatedAt
-            })
+            Items = comments.Select(c => c.ToResponse())
         };
     }
 
@@ -324,13 +301,7 @@ public class TaskService : ITaskService
 
         await _context.SaveChangesAsync();
 
-        return new CommentResponse
-        {
-            Id = comment.Id,
-            AuthorUserId = comment.AuthorUserId,
-            Content = comment.Content,
-            CreatedAt = comment.CreatedAt
-        };
+        return comment.ToResponse();
     }
 
     private void AddHistory(Guid taskId, string propertyName, string? oldValue, string? newValue, Guid userId)
@@ -366,14 +337,7 @@ public class TaskService : ITaskService
             .AsNoTracking()
             .ToListAsync();
 
-        return history.Select(h => new TaskHistoryResponse
-        {
-            PropertyName = h.PropertyName,
-            OldValue = h.OldValue,
-            NewValue = h.NewValue,
-            ChangedByUserId = h.ChangedByUserId,
-            ChangedAt = h.ChangedAt
-        });
+        return history.Select(h => h.ToResponse());
     }
 
 }
