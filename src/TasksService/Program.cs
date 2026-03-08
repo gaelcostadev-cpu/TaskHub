@@ -10,7 +10,7 @@ using System.Text;
 using TasksService.Infrastructure;
 using TasksService.Services;
 using TasksService.Validators;
-using TasksService.Mappings;
+using Shared.Infrastructure.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,12 +93,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorizationBuilder().
     AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 
-builder.Services.AddScoped<ITaskService, TaskService>();
+//validators
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateCommentRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<TaskQueryParametersValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskRequestValidator>();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssembly(typeof(CreateTaskRequestValidator).Assembly);
+
+//services
+builder.Services.AddScoped<ITaskService, TaskService>();
+
+//messaging
+builder.Services.AddSingleton<IMessageBus, RabbitMqMessageBus>();
+
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>

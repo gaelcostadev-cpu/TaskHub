@@ -81,18 +81,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddAuthorizationBuilder().
     AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 
+//validators
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssembly(typeof(RegisterRequestValidator).Assembly);
 
+//services
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthApplicationService, AuthApplicationService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<RefreshTokenRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
-var app = builder.Build();
+
+var app = builder.Build(); 
 
 if (app.Environment.IsDevelopment())
 {
@@ -100,8 +102,6 @@ if (app.Environment.IsDevelopment())
 
 }
 
-
-app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

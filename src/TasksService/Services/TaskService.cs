@@ -4,16 +4,20 @@ using TasksService.Domain.Entities;
 using TasksService.Domain.Enums;
 using TasksService.Infrastructure;
 using TasksService.Mappings;
+using Shared.Infrastructure.Messaging;
+using Shared.Contracts.Events;
 
 namespace TasksService.Services;
 
 public class TaskService : ITaskService
 {
     private readonly TasksDbContext _context;
+    private readonly IMessageBus _bus;
 
-    public TaskService(TasksDbContext context)
+    public TaskService(TasksDbContext context, IMessageBus bus)
     {
         _context = context;
+        _bus = bus;
     }
 
     public async Task<TaskResponse> CreateAsync(CreateTaskRequest request, Guid userId)
@@ -28,6 +32,16 @@ public class TaskService : ITaskService
 
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
+
+        await _bus.PublishAsync(
+            new TaskCreatedEvent(
+                task.Id,
+                task.Title,
+                userId,
+                task.CreatedAt
+            ),
+            "task.created"
+        );
 
         return task.ToResponse();
     }
@@ -196,6 +210,16 @@ public class TaskService : ITaskService
         );
 
         await _context.SaveChangesAsync();
+
+        await _bus.PublishAsync(
+            new TaskUpdatedEvent(
+                task.Id,
+                userId,
+                DateTime.UtcNow
+            ),
+            "task.updated"
+        );
+
         return true;
     }
 
@@ -219,6 +243,17 @@ public class TaskService : ITaskService
         AddHistory(task.Id, "Assignment", null, assignedUserId.ToString(), requesterId);
 
         await _context.SaveChangesAsync();
+
+        await _bus.PublishAsync(
+            new TaskAssignedEvent(
+                task.Id,
+                assignedUserId,
+                requesterId,
+                DateTime.UtcNow
+            ),
+            "task.assigned"
+        );
+
 
         return AssignUserResult.Success;
     }
@@ -300,6 +335,17 @@ public class TaskService : ITaskService
         _context.TaskComments.Add(comment);
 
         await _context.SaveChangesAsync();
+
+        await _bus.PublishAsync(
+            new CommentCreatedEvent(
+                taskId,
+                comment.Id,
+                userId,
+                comment.Content,
+                comment.CreatedAt
+            ),
+            "comment.created"
+        );
 
         return comment.ToResponse();
     }

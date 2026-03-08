@@ -1,0 +1,19 @@
+[
+  {
+    "Name": "Novo Perfil",
+    "Projects": [
+      {
+        "Path": "src\\AuthService\\AuthService.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\TasksService\\TasksService.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\ApiGateway\\ApiGateway.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
