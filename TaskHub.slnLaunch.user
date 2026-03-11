@@ -4,15 +4,23 @@
     "Projects": [
       {
         "Path": "src\\AuthService\\AuthService.csproj",
-        "Action": "Start"
+        "Action": "Start",
+        "DebugTarget": "http"
       },
       {
         "Path": "src\\TasksService\\TasksService.csproj",
-        "Action": "Start"
+        "Action": "Start",
+        "DebugTarget": "http"
       },
       {
         "Path": "src\\ApiGateway\\ApiGateway.csproj",
-        "Action": "Start"
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "src\\NotificationsService\\NotificationsService.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
       }
     ]
   }

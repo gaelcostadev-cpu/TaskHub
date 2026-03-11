@@ -36,7 +36,11 @@ public class RabbitMqMessageBus : IMessageBus, IDisposable
         var props = new BasicProperties
         {
             ContentType = "application/json",
-            DeliveryMode = DeliveryModes.Persistent
+            DeliveryMode = DeliveryModes.Persistent,
+            Headers = new Dictionary<string, object?>
+            {
+                ["x-retry-count"] = 0
+            }
         };
 
         await _channel.BasicPublishAsync(
@@ -52,5 +56,16 @@ public class RabbitMqMessageBus : IMessageBus, IDisposable
     {
         _channel.CloseAsync().GetAwaiter().GetResult();
         _connection.CloseAsync().GetAwaiter().GetResult();
+        _channel.ExchangeDeclareAsync(
+            exchange: "taskhub.retry",
+            type: ExchangeType.Topic,
+            durable: true
+        ).GetAwaiter().GetResult();
+
+        _channel.ExchangeDeclareAsync(
+            exchange: "taskhub.dead",
+            type: ExchangeType.Topic,
+            durable: true
+        ).GetAwaiter().GetResult();
     }
 }
