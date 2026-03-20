@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System.Text;
 using System.Text.Json;
+using Shared.Contracts.Events;
 
 namespace Shared.Infrastructure.Messaging;
 
@@ -31,7 +32,17 @@ public class RabbitMqMessageBus : IMessageBus, IDisposable
 
     public async Task PublishAsync<T>(T message, string routingKey)
     {
-        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+        var envelope = new EventEnvelope<T>(
+            Guid.NewGuid(),
+            typeof(T).Name,
+            1,
+            DateTime.UtcNow,
+            message
+        );
+
+        var body = Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(envelope)
+        );
 
         var props = new BasicProperties
         {

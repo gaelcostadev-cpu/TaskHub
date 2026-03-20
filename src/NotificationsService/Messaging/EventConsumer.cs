@@ -10,8 +10,8 @@ namespace NotificationsService.Messaging;
 public class EventConsumer : BackgroundService
 {
     private readonly IConfiguration _configuration;
-    private readonly NotificationService _notificationService;
     private readonly ILogger<EventConsumer> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     private IConnection? _connection;
     private IChannel? _channel;
@@ -20,11 +20,11 @@ public class EventConsumer : BackgroundService
 
     public EventConsumer(
         IConfiguration configuration,
-        NotificationService notificationService,
+        IServiceScopeFactory scopeFactory,
         ILogger<EventConsumer> logger)
     {
         _configuration = configuration;
-        _notificationService = notificationService;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -54,13 +54,29 @@ public class EventConsumer : BackgroundService
 
             try
             {
-                await _notificationService.HandleAsync(routingKey, message);
+                using var scope = _scopeFactory.CreateScope();
+
+                var service = scope.ServiceProvider
+                    .GetRequiredService<NotificationService>();
+
+                await service.HandleAsync(routingKey, message, _logger);
+
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(
+                        "Event {RoutingKey} processed successfully",
+                        routingKey
+                    );
+                }
 
                 await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing event");
+                if (_logger.IsEnabled(LogLevel.Error))
+                {
+                    _logger.LogError(ex, "Error processing event");
+                }
 
                 if (retryCount < MaxRetries)
                 {
@@ -78,7 +94,8 @@ public class EventConsumer : BackgroundService
         await _channel.BasicConsumeAsync(
             queue: QueueSetup.NotificationsQueue,
             autoAck: false,
-            consumer: consumer
+            consumer: consumer,
+            cancellationToken: stoppingToken
         );
     }
 
@@ -87,12 +104,16 @@ public class EventConsumer : BackgroundService
         if (ea.BasicProperties.Headers != null &&
             ea.BasicProperties.Headers.TryGetValue("x-retry-count", out var value))
         {
+            if (value is byte[] bytes)
+            {
+                return int.Parse(Encoding.UTF8.GetString(bytes));
+            }
+
             return Convert.ToInt32(value);
         }
 
         return 0;
     }
-
     private async Task RetryMessage(BasicDeliverEventArgs ea, byte[] body, int retryCount)
     {
         var props = new BasicProperties
