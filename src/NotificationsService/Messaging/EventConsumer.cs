@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Connections;
-using NotificationsService.Services;
+﻿using NotificationsService.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
-using System.Threading.Channels;
 
 namespace NotificationsService.Messaging;
 
@@ -97,6 +95,9 @@ public class EventConsumer : BackgroundService
             consumer: consumer,
             cancellationToken: stoppingToken
         );
+
+        // mantém o BackgroundService vivo
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
     private int GetRetryCount(BasicDeliverEventArgs ea)

@@ -11,8 +11,12 @@ builder.Services.AddDbContext<NotificationsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
 );
 builder.Services.AddSignalR();
+
 builder.Services.AddScoped<NotificationRepository>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<NotificationDispatcher>();
+
+builder.Services.AddSingleton<UserConnectionManager>();
 
 builder.Services.AddHostedService<EventConsumer>();
 
@@ -35,7 +39,21 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/", () => "NotificationsService running");
+app.MapPost("/notifications/test-notification", async (
+    Guid userId,
+    NotificationDispatcher dispatcher) =>
+{
+    await dispatcher.SendToUser(userId, new
+    {
+        message = "Teste de notificação",
+        createdAt = DateTime.UtcNow
+    });
+
+    return Results.Ok(new { sent = true });
+});
+
 app.MapHub<NotificationsHub>("/ws/notifications");
 app.MapNotificationEndpoints();
+
 
 app.Run();

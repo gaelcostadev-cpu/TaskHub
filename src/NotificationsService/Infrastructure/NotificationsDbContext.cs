@@ -1,8 +1,4 @@
-﻿using MassTransit;
-using Microsoft.EntityFrameworkCore;
-using NotificationsService.Models;
-using System.Collections.Generic;
-using System.Reflection.Emit;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace NotificationsService.Infrastructure;
 

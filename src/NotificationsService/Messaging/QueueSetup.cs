@@ -1,5 +1,4 @@
 ﻿using RabbitMQ.Client;
-using System.Threading.Channels;
 
 namespace NotificationsService.Messaging;
 

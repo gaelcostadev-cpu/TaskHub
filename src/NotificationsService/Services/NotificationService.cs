@@ -1,4 +1,5 @@
 ﻿using NotificationsService.Infrastructure;
+using NotificationsService.Realtime;
 using Shared.Contracts.Events;
 using System.Text.Json;
 
@@ -8,6 +9,7 @@ public class NotificationService
 {
     private readonly ILogger<NotificationService> _logger;
     private readonly NotificationRepository _repository;
+    private readonly NotificationDispatcher _dispatcher;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -16,10 +18,12 @@ public class NotificationService
 
     public NotificationService(
         ILogger<NotificationService> logger,
-        NotificationRepository repository)
+        NotificationRepository repository,
+        NotificationDispatcher dispatcher)
     {
         _logger = logger;
         _repository = repository;
+        _dispatcher = dispatcher;
     }
 
     private async Task CreateNotification(Guid userId, string message, Guid? eventId = null)
@@ -42,6 +46,13 @@ public class NotificationService
         };
 
         await _repository.AddAsync(notification);
+
+        await _dispatcher.SendToUser(userId, new
+        {
+            id = notification.Id,
+            message = notification.Message,
+            createdAt = notification.CreatedAt
+        });
     }
 
     public ILogger Get_logger()
