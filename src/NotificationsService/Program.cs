@@ -99,7 +99,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/", () => "NotificationsService running");
-app.MapPost("/notifications/test-notification", async (
+app.MapPost("/test-notification", async (
     Guid userId,
     NotificationDispatcher dispatcher) =>
 {
