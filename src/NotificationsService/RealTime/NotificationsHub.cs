@@ -14,27 +14,31 @@ public class NotificationsHub : Hub
         _connections = connections;
     }
 
+    private string? GetUserId()
+    {
+        return Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? Context.User?.FindFirst("sub")?.Value;
+    }
+
     public override async Task OnConnectedAsync()
     {
-        var userId = Context.User?
-            .FindFirst(ClaimTypes.NameIdentifier)?
-            .Value;
+        var userId = GetUserId();
 
-        if (!string.IsNullOrWhiteSpace(userId))
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            _connections.AddConnection(userId, Context.ConnectionId);
-
-            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            Context.Abort();
+            return;
         }
+
+        _connections.AddConnection(userId, Context.ConnectionId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, userId);
 
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var userId = Context.User?
-            .FindFirst(ClaimTypes.NameIdentifier)?
-            .Value;
+        var userId = GetUserId();
 
         if (!string.IsNullOrWhiteSpace(userId))
         {

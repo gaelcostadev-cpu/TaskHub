@@ -74,13 +74,13 @@ public static class QueueSetup
         await channel.QueueBindAsync(
             queue: NotificationsQueue,
             exchange: EventsExchange,
-            routingKey: "task.*"
+            routingKey: "task.*.v1"
         );
 
         await channel.QueueBindAsync(
             queue: NotificationsQueue,
             exchange: EventsExchange,
-            routingKey: "comment.*"
+            routingKey: "comment.*.v1"
         );
 
         await channel.QueueBindAsync(

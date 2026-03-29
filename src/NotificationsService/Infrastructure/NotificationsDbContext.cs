@@ -31,8 +31,13 @@ public class NotificationsDbContext : DbContext
             entity.Property(n => n.IsRead)
                 .HasDefaultValue(false);
 
+            entity.Property(n => n.EventId)
+                .IsRequired(false);
+
             entity.HasIndex(n => n.EventId)
-                .IsUnique(false);
+                .IsUnique();
+
+            entity.HasIndex(n => new { n.UserId, n.IsRead });
 
             entity.Property(n => n.CreatedAt)
                 .HasDefaultValueSql("NOW()");

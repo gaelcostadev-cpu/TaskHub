@@ -71,10 +71,11 @@ public class EventConsumer : BackgroundService
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError(ex, "Error processing event");
-                }
+                _logger.LogError(ex,
+                    "Error processing event {RoutingKey} - Payload: {Payload}",
+                    routingKey,
+                    message
+                );
 
                 if (retryCount < MaxRetries)
                 {

@@ -44,7 +44,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
 
-        // CRUCIAL PARA WEBSOCKET
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -54,7 +53,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var path = context.HttpContext.Request.Path;
 
                 if (!string.IsNullOrEmpty(accessToken) &&
-                    path.StartsWithSegments("/ws/notifications"))
+                    path.StartsWithSegments("/notifications/ws"))
                 {
                     context.Token = accessToken;
                 }
@@ -112,7 +111,7 @@ app.MapPost("/test-notification", async (
     return Results.Ok(new { sent = true });
 });
 
-app.MapHub<NotificationsHub>("/ws/notifications");
+app.MapHub<NotificationsHub>("/notifications/ws");
 app.MapNotificationEndpoints();
 
 

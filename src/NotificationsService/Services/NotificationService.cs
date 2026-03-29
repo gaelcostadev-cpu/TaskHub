@@ -30,10 +30,7 @@ public class NotificationService
     {
         if (eventId.HasValue)
         {
-            var exists = await _repository.ExistsByEvent(eventId.Value);
-
-            if (exists)
-                return;
+            if (await _repository.ExistsByEvent(eventId.Value)) return;
         }
 
         var notification = new Notification
@@ -55,11 +52,6 @@ public class NotificationService
         });
     }
 
-    public ILogger Get_logger()
-    {
-        return _logger;
-    }
-
     public async Task HandleAsync(string routingKey, string message, ILogger routingLogger)
     {
         if (routingLogger.IsEnabled(LogLevel.Information))
@@ -70,76 +62,55 @@ public class NotificationService
             );
         }
 
-        switch (routingKey)
+        try 
         {
-            case "task.created":
-                if (routingLogger.IsEnabled(LogLevel.Information))
-                {
-                    routingLogger.LogInformation(
-                        "Processing event {RoutingKey}",
-                        routingKey
-                    );
-                }
-                var envelope = JsonSerializer.Deserialize<EventEnvelope<TaskCreatedEvent>>(message, JsonOptions);
-                var taskCreated = envelope?.Data;
-                await HandleTaskCreated(taskCreated!);
-                break;
+            switch (routingKey)
+            {
+                case "task.created":
+                    await HandleEvent<TaskCreatedEvent>(message, HandleTaskCreated);
+                    break;
 
-            case "task.updated":
-                if (routingLogger.IsEnabled(LogLevel.Information))
-                {
-                    routingLogger.LogInformation(
-                        "Processing event {RoutingKey}",
-                        routingKey
-                    );
-                }
-                var envelope2 = JsonSerializer.Deserialize<EventEnvelope<TaskUpdatedEvent>>(message, JsonOptions);
-                var taskUpdated = envelope2?.Data;
-                await HandleTaskUpdated(taskUpdated!);
-                break;
+                case "task.updated":
+                    await HandleEvent<TaskUpdatedEvent>(message, HandleTaskUpdated);
+                    break;
 
-            case "task.assigned":
-                if (routingLogger.IsEnabled(LogLevel.Information))
-                {
-                    routingLogger.LogInformation(
-                        "Processing event {RoutingKey}",
-                        routingKey
-                    );
-                }
-                var envelope3 = JsonSerializer.Deserialize<EventEnvelope<TaskAssignedEvent>>(message, JsonOptions);
-                
-                if (envelope3?.Data == null)
-                {
-                    _logger.LogError("Invalid TaskAssignedEvent payload: {Message}", message);
-                    return;
-                }
+                case "task.assigned":
+                    await HandleEvent<TaskAssignedEvent>(message, HandleTaskAssigned);
+                    break;
 
-                await HandleTaskAssigned(envelope3.Data, envelope3.EventId);
-                break;
+                case "comment.created":
+                    await HandleEvent<CommentCreatedEvent>(message, HandleCommentCreated);
+                    break;
 
-            case "comment.created":
-                if (routingLogger.IsEnabled(LogLevel.Information))
-                {
-                    routingLogger.LogInformation(
-                        "Processing event {RoutingKey}",
-                        routingKey
-                    );
-                }
-                var envelope4 = JsonSerializer.Deserialize<EventEnvelope<CommentCreatedEvent>>(message, JsonOptions);
-                var commentCreated = envelope4?.Data;
-                await HandleCommentCreated(commentCreated!);
-                break;
-
-            default:
-                if (routingLogger.IsEnabled(LogLevel.Warning))
-                {
+                default:
                     routingLogger.LogWarning("Unhandled event: {RoutingKey}", routingKey);
-                }
-                break;
+                    break;
+            }
+        } catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing event {RoutingKey} - Payload: {Payload}", routingKey, message);
+            throw;
         }
     }
 
-    private Task HandleTaskCreated(TaskCreatedEvent evt)
+    private async Task HandleEvent<T>(string message, Func<T, Guid?, Task> handler)
+    {
+        var envelope = JsonSerializer.Deserialize<EventEnvelope<T>>(message, JsonOptions);
+
+        if (envelope != null)
+        {
+            if (envelope.Data != null)
+            {
+                await handler(envelope.Data, envelope.EventId);
+            }
+            else _logger.LogError("Invalid event payload: {Message}", message);
+        }
+        else _logger.LogError("Failed to deserialize event envelope: {Message}", message);
+
+        return;
+    }
+
+    private Task HandleTaskCreated(TaskCreatedEvent evt, Guid? eventId)
     {
         if (_logger.IsEnabled(LogLevel.Information))
         {
@@ -148,7 +119,7 @@ public class NotificationService
         return Task.CompletedTask;
     }
 
-    private Task HandleTaskUpdated(TaskUpdatedEvent evt)
+    private Task HandleTaskUpdated(TaskUpdatedEvent evt, Guid? eventId)
     {
         if (_logger.IsEnabled(LogLevel.Information))
         {
@@ -157,7 +128,7 @@ public class NotificationService
         return Task.CompletedTask;
     }
 
-    private async Task HandleTaskAssigned(TaskAssignedEvent evt, Guid eventId)
+    private async Task HandleTaskAssigned(TaskAssignedEvent evt, Guid? eventId)
     {
         await CreateNotification(
             evt.AssignedUserId,
@@ -166,7 +137,7 @@ public class NotificationService
         );
     }
 
-    private async Task HandleCommentCreated(CommentCreatedEvent evt)
+    private async Task HandleCommentCreated(CommentCreatedEvent evt, Guid? eventId)
     {
         await CreateNotification(
             evt.AuthorUserId,

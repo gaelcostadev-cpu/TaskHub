@@ -30,10 +30,10 @@ public class NotificationRepository
             .ExecuteUpdateAsync(setters =>
                 setters.SetProperty(n => n.IsRead, true));
     }
-    public async Task AddAsync(Notification notification)
+    public async Task AddAsync(Notification notification, CancellationToken ct = default)
     {
         _db.Notifications.Add(notification);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
     }
 
     public async Task<List<Notification>> GetByUser(Guid userId, int page = 1, int pageSize = 20)
