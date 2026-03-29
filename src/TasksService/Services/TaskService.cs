@@ -362,7 +362,7 @@ public class TaskService : ITaskService
 
         _context.TaskHistories.Add(history);
     }
-
+    
     public async Task<IEnumerable<TaskHistoryResponse>> GetHistoryAsync(Guid taskId, Guid userId)
     {
         var taskExists = await _context.Tasks

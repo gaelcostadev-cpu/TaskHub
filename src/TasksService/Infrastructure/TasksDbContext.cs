@@ -66,7 +66,7 @@ public class TasksDbContext : DbContext
         commentBuilder.Property(c => c.CreatedAt)
             .IsRequired();
 
-        commentBuilder.HasIndex(c => c.TaskId);
+        commentBuilder.HasIndex(c => new { c.TaskId, c.CreatedAt });
         commentBuilder.HasIndex(c => c.AuthorUserId);
 
         commentBuilder.HasOne(c => c.Task)
@@ -119,7 +119,7 @@ public class TasksDbContext : DbContext
             .IsRequired();
         #endregion
 
-        taskBuilder.HasIndex(t => t.CreatedByUserId);
+        taskBuilder.HasIndex(t => new { t.CreatedByUserId, t.CreatedAt });
         taskBuilder.HasIndex(t => t.Status);
         taskBuilder.HasIndex(t => t.Priority);
         taskBuilder.HasIndex(t => t.DueDate);

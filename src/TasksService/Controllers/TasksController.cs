@@ -121,12 +121,14 @@ namespace TasksService.Controllers
 
         private Guid GetUserId()
         {
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId =
+                User.FindFirst("sub")?.Value ??
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (claim == null)
+            if (string.IsNullOrWhiteSpace(userId))
                 throw new UnauthorizedAccessException("UserId claim not found.");
 
-            return Guid.Parse(claim);
+            return Guid.Parse(userId);
         }
 
         [HttpGet("{id:guid}/history")]

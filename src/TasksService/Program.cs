@@ -21,7 +21,6 @@ builder.Services.AddDbContext<TasksDbContext>(options =>
     );
 });
 
-builder.Services.AddControllers();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
