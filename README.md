@@ -7,12 +7,15 @@ Sistema de gestão de tarefas colaborativo desenvolvido com foco em arquitetura 
 ## Visão Geral
 O TaskHub é uma plataforma para gerenciamento colaborativo de tarefas. Ele permite criação, edição, atribuição e acompanhamento de tarefas em equipes, incluindo comentários, histórico de alterações e notificações em tempo real.
 
-É voltado para:
-- Desenvolvedores e equipes que desejam estudar e utilizar um exemplo real de arquitetura distribuída em .NET.
-- Ambientes corporativos que buscam organização e rastreabilidade de tarefas.
-- Uso educacional ou demonstração técnica de domínio no ecossistema C#, APIs Web e mensageria.
+---
 
-Pode ser utilizado tanto em ambiente de desenvolvimento quanto ajustado para produção.
+## Sobre o Projeto
+
+Este projeto foi desenvolvido como parte de um desafio técnico com foco em:
+
+- Arquitetura moderna
+- Boas práticas de engenharia
+- Sistemas distribuídos reais
 
 ---
 
@@ -26,6 +29,30 @@ Os serviços são independentes, cada um responsável pelo seu contexto, e um AP
 - Notifications Service para consumo de eventos e entrega em tempo real via SignalR.
 - Comunicação assíncrona baseada em eventos publicados e consumidos via RabbitMQ.
 - Persistência utilizando PostgreSQL.
+
+---
+
+## Endpoints principais
+Auth
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh
+Tasks
+GET    /api/tasks
+POST   /api/tasks
+GET    /api/tasks/{id}
+PUT    /api/tasks/{id}
+DELETE /api/tasks/{id}
+
+POST   /api/tasks/{id}/comments
+GET    /api/tasks/{id}/comments
+
+---
+
+## WebSocket / SignalR Events
+task.created
+task.updated
+comment.created
 
 ---
 
