@@ -33,19 +33,19 @@ Os serviços são independentes, cada um responsável pelo seu contexto, e um AP
 ---
 
 ## Endpoints principais
-Auth
-POST /api/auth/register
-POST /api/auth/login
-POST /api/auth/refresh
-Tasks
-GET    /api/tasks
-POST   /api/tasks
-GET    /api/tasks/{id}
-PUT    /api/tasks/{id}
-DELETE /api/tasks/{id}
+### Auth
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/refresh
+### Tasks
+- GET    /api/tasks
+- POST   /api/tasks
+- GET    /api/tasks/{id}
+- PUT    /api/tasks/{id}
+- DELETE /api/tasks/{id}
 
-POST   /api/tasks/{id}/comments
-GET    /api/tasks/{id}/comments
+- POST   /api/tasks/{id}/comments
+- GET    /api/tasks/{id}/comments
 
 ---
 
