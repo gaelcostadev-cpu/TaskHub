@@ -50,9 +50,9 @@ Os serviços são independentes, cada um responsável pelo seu contexto, e um AP
 ---
 
 ## WebSocket / SignalR Events
-task.created
-task.updated
-comment.created
+- task.created
+- task.updated
+- comment.created
 
 ---
 
