@@ -5,4 +5,3 @@ namespace AuthService.Infrastructure.Security
 		string Generate();
 	}
 }
-

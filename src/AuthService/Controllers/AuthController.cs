@@ -1,6 +1,7 @@
 ﻿using AuthService.Contracts;
 using AuthService.Infrastructure;
 using AuthService.Infrastructure.Jwt;
+using AuthService.Infrastructure.Security;
 using AuthService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,15 +24,22 @@ namespace AuthService.Controllers
         private readonly IAuthApplicationService _authApplicationService;
         private readonly AuthDbContext _dbContext;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
+        private readonly IRefreshTokenGenerator _refreshTokenGenerator;
         private readonly JwtSettings _jwtSettings;
 
-        public AuthController(IUserService userService, IAuthApplicationService authApplicationService, 
-            AuthDbContext dbContext, IJwtTokenGenerator jwtTokenGenerator, IOptions<JwtSettings> jwtOptions)
+        public AuthController(
+            IUserService userService, 
+            IAuthApplicationService authApplicationService, 
+            AuthDbContext dbContext, 
+            IJwtTokenGenerator jwtTokenGenerator,
+            IRefreshTokenGenerator refreshTokenGenerator,
+            IOptions<JwtSettings> jwtOptions)
         {
             _userService = userService;
             _dbContext = dbContext;
             _authApplicationService = authApplicationService;
             _jwtTokenGenerator = jwtTokenGenerator;
+            _refreshTokenGenerator = refreshTokenGenerator;
             _jwtSettings = jwtOptions.Value;
         }
 
@@ -91,10 +99,18 @@ namespace AuthService.Controllers
                 return Unauthorized();
 
             var newAccessToken = _jwtTokenGenerator.GenerateAccessToken(user);
+            var newRefreshToken = _refreshTokenGenerator.Generate();
+
+            var refreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(30);
+
+            user.SetRefreshToken(newRefreshToken, refreshTokenExpiresAt);
+
+            await _dbContext.SaveChangesAsync();
 
             return Ok(new
             {
                 AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
                 ExpiresIn = _jwtSettings.AccessTokenExpirationMinutes * 60
             });
         }
