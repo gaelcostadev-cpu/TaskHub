@@ -16,9 +16,9 @@ namespace AuthService.Validators
 
             RuleFor(x => x.Password)
                 .NotEmpty()
-                .WithMessage("Password é obrigatória.")
+                .WithMessage("Senha é obrigatória.")
                 .MinimumLength(6)
-                .WithMessage("Password deve ter no mínimo 6 caracteres.")
+                .WithMessage("Senha deve ter no mínimo 6 caracteres.")
                 .MaximumLength(100);
         }
     }
