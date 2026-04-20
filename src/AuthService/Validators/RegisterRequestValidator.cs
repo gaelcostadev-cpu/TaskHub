@@ -16,27 +16,27 @@ namespace AuthService.Validators
 
             RuleFor(x => x.Username)
                 .NotEmpty()
-                .WithMessage("Username é obrigatório.")
+                .WithMessage("Nome de usuário é obrigatório.")
                 .MinimumLength(3)
-                .WithMessage("Username deve ter no mínimo 3 caracteres.")
+                .WithMessage("Nome de usuário deve ter no mínimo 3 caracteres.")
                 .MaximumLength(30)
-                .WithMessage("Username deve ter no máximo 30 caracteres.")
+                .WithMessage("Nome de usuário deve ter no máximo 30 caracteres.")
                 .Matches("^[a-zA-Z0-9_]+$")
-                .WithMessage("Username deve conter apenas letras, números ou underscore.");
+                .WithMessage("Nome de usuário deve conter apenas letras, números ou underscore.");
 
             RuleFor(x => x.Password)
                 .NotEmpty()
-                .WithMessage("Password é obrigatória.")
+                .WithMessage("Senha é obrigatória.")
                 .MinimumLength(6)
-                .WithMessage("Password deve ter no mínimo 6 caracteres.")
+                .WithMessage("Senha deve ter no mínimo 6 caracteres.")
                 .MaximumLength(100)
-                .WithMessage("Password muito longa.")
+                .WithMessage("Senha muito longa.")
                 .Matches("[A-Z]")
-                .WithMessage("Password deve conter ao menos uma letra maiúscula.")
+                .WithMessage("Senha deve conter ao menos uma letra maiúscula.")
                 .Matches("[a-z]")
-                .WithMessage("Password deve conter ao menos uma letra minúscula.")
+                .WithMessage("Senha deve conter ao menos uma letra minúscula.")
                 .Matches("[0-9]")
-                .WithMessage("Password deve conter ao menos um número.");
+                .WithMessage("Senha deve conter ao menos um número.");
         }
     }
 }
