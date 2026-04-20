@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace AuthService.Contracts
+﻿namespace AuthService.Contracts
 {
     public class HashRequest
     {
